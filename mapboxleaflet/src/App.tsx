@@ -2,6 +2,7 @@ import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import { LeafLet } from "./leafLet/LeafLet";
+import { Mapbox } from "./mapbox/Mapbox";
 
 function App() {
   return (
@@ -19,7 +20,8 @@ function App() {
           Learn React
         </a> */}
       <div>
-        <LeafLet></LeafLet>
+        {/* <LeafLet></LeafLet> */}
+        <Mapbox></Mapbox>
       </div>
     </div>
   );
