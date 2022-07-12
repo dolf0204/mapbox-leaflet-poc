@@ -3,6 +3,8 @@ import logo from "./logo.svg";
 import "./App.css";
 import { LeafLet } from "./leafLet/LeafLet";
 import { Mapbox } from "./mapbox/Mapbox";
+import Mapbox2 from "./mapbox/Mapbox2";
+import Mapbox3 from "./mapbox/Mapbox3";
 
 function App() {
   return (
@@ -21,7 +23,7 @@ function App() {
         </a> */}
       <div>
         {/* <LeafLet></LeafLet> */}
-        <Mapbox></Mapbox>
+        <Mapbox3></Mapbox3>
       </div>
     </div>
   );

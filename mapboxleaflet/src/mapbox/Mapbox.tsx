@@ -66,119 +66,138 @@ const Map = ReactMapboxGl({
 mapboxgl.accessToken = token;
 
 export const Mapbox: FC = () => {
-  const mapContainer = useRef(null);
-  const map = useRef(null);
-  const [lng, setLng] = useState(-70.9);
-  const [lat, setLat] = useState(42.35);
-  const [zoom, setZoom] = useState(9);
+  // const mapContainer = useRef(null);
+  // const map = useRef(null);
+  // const [lng, setLng] = useState(-70.9);
+  // const [lat, setLat] = useState(42.35);
+  // const [zoom, setZoom] = useState(9);
 
-  useEffect(() => {
-    if (map.current) return; // initialize map only once
-    (map.current as any) = new mapboxgl.Map({
-      container: (mapContainer as any).current,
-      style: "mapbox://styles/mapbox/streets-v11",
-      center: [-0.09, 51.505],
-      zoom: zoom,
-    });
-  });
+  // useEffect(() => {
+  //   if (map.current) return; // initialize map only once
+  //   (map.current as any) = new mapboxgl.Map({
+  //     container: (mapContainer as any).current,
+  //     style: "mapbox://styles/mapbox/streets-v11",
+  //     center: [-0.09, 51.505],
+  //     zoom: zoom,
+  //   });
+  // });
 
-  useEffect(() => {
-    if (!map.current) return; // wait for map to initialize
-    (map.current as any).on("move", () => {
-      setLng((map.current as any).getCenter().lng.toFixed(4));
-      setLat((map.current as any).getCenter().lat.toFixed(4));
-      setZoom((map.current as any).getZoom().toFixed(2));
-    });
-  });
-  // let mapboxMap: mapboxgl.Map;
+  // useEffect(() => {
+  //   if (!map.current) return; // wait for map to initialize
+  //   (map.current as any).on("move", () => {
+  //     setLng((map.current as any).getCenter().lng.toFixed(4));
+  //     setLat((map.current as any).getCenter().lat.toFixed(4));
+  //     setZoom((map.current as any).getZoom().toFixed(2));
+  //   });
+  // });
+
+  let mapboxMap: mapboxgl.Map;
   // const [mapState, setMapState] = useState<mapboxgl.Map | null>(null);
-  // // debugger;
-  // // mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN!;
+  // debugger;
+  // mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN!;
 
   const geojson: GeoJSON.FeatureCollection<GeoJSON.Geometry> =
     initialCircleCollection;
 
-  // const [thetas, setThetas] = useState<number[]>([]);
+  const [thetas, setThetas] = useState<number[]>([]);
 
   // const setMapRef = (map: any) => {
   //   if (map && !mapState) {
   //     debugger;
-  //     const mapGL = map.getMap();
-  //     map.setRef()
+  //     // const mapGL = map.getMap();
+  //     map.setRef();
   //     // mapboxMap = mapGL;
-  //     setMapState(mapGL);
+  //     setMapState(map);
   //   }
   // };
 
-  // // const initializeMap = useCallback(() => {
-  // //   mapboxMap.addSource("circlesSet", { type: "geojson", data: refData });
-  // //   return mapboxMap.addLayer({
-  // //     id: "circlesSet",
-  // //     type: "circle",
-  // //     source: "circlesSet",
-  // //   });
-  // // }, []);
-
-  // // useEffect(() => {
-  // //   if (!mapboxMap) {
-  // //     initializeMap();
-  // //   }
-  // // }, []);
-
-  const circlesUpdater = setInterval(() => {
-    if (mapState) {
-      debugger;
-
-      for (let i = 0; i < thetas.length; i++) {
-        let ll =
-          (geojson.features[0].geometry as any).coordinates ??
-          initialCoordinates;
-        let theta = thetas[i];
-
-        const radEarth = 6378; // km
-        const dy = 0.01 * theta;
-        const dx = 0.01 * theta;
-        const degFactor = theta * 180;
-        const newLng: number = ll[0] + (dy / radEarth) * (degFactor / Math.PI);
-        const newLat: number =
-          ll[1] +
-          ((dx / radEarth) * (degFactor / Math.PI)) /
-            Math.cos((ll[0] * Math.PI) / degFactor);
-
-        const newPos = [newLat, newLng];
-        // debugger;
-        if (mapState.getBounds().contains(newPos as LngLatLike)) {
-          (geojson.features[0].geometry as any).coordinates = newPos;
-        } else {
-          (geojson.features[0].geometry as any).coordinates = getRandomLatLng();
-        }
-      }
-
-      if (thetas.length > 2000) {
-        clearInterval(circlesUpdater);
-      }
-
-      // Add another circle with random direction
-      thetas.push(Math.random());
-      const newFeature = {
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: getRandomLatLng(),
-        },
-        properties: {},
-      };
-      // (geojson.features[0].geometry as any).coordinates.push(getRandomLatLng());
-      geojson.features.push(newFeature as any);
-
-      // Update the map
-      // mapboxMap.getSource("circlesSet").setData(refData);
-      const source: mapboxgl.GeoJSONSource = mapState.getSource(
-        "circlesSet"
-      ) as mapboxgl.GeoJSONSource;
-      source.setData(geojson);
+  const ref = useRef(null);
+  const [map, setMap] = useState<mapboxgl.Map | null>(null);
+  useEffect(() => {
+    if (ref.current && !map) {
+      const map = new mapboxgl.Map({
+        container: ref.current,
+        style: "mapbox://styles/mapbox/streets-v11",
+        center: [0, 0],
+        zoom: 1,
+      });
+      setMap(map);
     }
-  }, 5);
+  }, [ref, map]);
+
+  // const initializeMap = useCallback(() => {
+  //   mapboxMap.addSource("circlesSet", { type: "geojson", data: refData });
+  //   return mapboxMap.addLayer({
+  //     id: "circlesSet",
+  //     type: "circle",
+  //     source: "circlesSet",
+  //   });
+  // }, []);
+
+  // useEffect(() => {
+  //   if (!mapboxMap) {
+  //     initializeMap();
+  //   }
+  // }, []);
+  debugger;
+
+  // const circlesUpdater = setInterval(() => {
+  //   if (mapState) {
+  //     debugger;
+
+  //     for (let i = 0; i < thetas.length; i++) {
+  //       let ll =
+  //         (geojson.features[0].geometry as any).coordinates ??
+  //         initialCoordinates;
+  //       let theta = thetas[i];
+
+  //       const radEarth = 6378; // km
+  //       const dy = 0.01 * theta;
+  //       const dx = 0.01 * theta;
+  //       const degFactor = theta * 180;
+  //       const newLng: number = ll[0] + (dy / radEarth) * (degFactor / Math.PI);
+  //       const newLat: number =
+  //         ll[1] +
+  //         ((dx / radEarth) * (degFactor / Math.PI)) /
+  //           Math.cos((ll[0] * Math.PI) / degFactor);
+
+  //       const newPos = [newLat, newLng];
+  //       // debugger;
+  //       if (mapState.getBounds().contains(newPos as LngLatLike)) {
+  //         (geojson.features[0].geometry as any).coordinates = newPos;
+  //       } else {
+  //         (geojson.features[0].geometry as any).coordinates = getRandomLatLng();
+  //       }
+  //     }
+
+  //     if (thetas.length > 2000) {
+  //       clearInterval(circlesUpdater);
+  //     }
+
+  //     // Add another circle with random direction
+  //     thetas.push(Math.random());
+  //     const newFeature = {
+  //       type: "Feature",
+  //       geometry: {
+  //         type: "Point",
+  //         coordinates: getRandomLatLng(),
+  //       },
+  //       properties: {},
+  //     };
+  //     // (geojson.features[0].geometry as any).coordinates.push(getRandomLatLng());
+  //     geojson.features.push(newFeature as any);
+
+  //     // Update the map
+  //     // mapboxMap.getSource("circlesSet").setData(refData);
+  //     debugger;
+  //     if (mapState) {
+  //       const source: mapboxgl.GeoJSONSource = mapState.getSource(
+  //         "circlesSet"
+  //       ) as mapboxgl.GeoJSONSource;
+  //       source.setData(geojson);
+  //     }
+  //   }
+  // }, 5);
 
   return (
     <div className="mapbox-container" id="map">
@@ -194,6 +213,7 @@ export const Mapbox: FC = () => {
       </MapGL> */}
       {/* <Map
         // ref={(map) => setMapRef(map)}
+        ref={ref}
         style="mapbox://styles/mapbox/streets-v9"
         containerStyle={{
           height: "100vh",
@@ -204,7 +224,7 @@ export const Mapbox: FC = () => {
           <Layer {...initialLayer} />
         </Source>
       </Map> */}
-      <div ref={mapContainer} className="map-container">
+      <div ref={ref} className="map-container">
         <Source id="circlesSet" type="geojson" data={geojson}>
           <Layer {...initialLayer} />
         </Source>
@@ -212,3 +232,93 @@ export const Mapbox: FC = () => {
     </div>
   );
 };
+
+// let mapboxMap: mapboxgl.Map;
+// const [mapState, setMapState] = useState<mapboxgl.Map | null>(null);
+// // debugger;
+// // mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN!;
+
+// const geojson: GeoJSON.FeatureCollection<GeoJSON.Geometry> =
+//   initialCircleCollection;
+
+// const [thetas, setThetas] = useState<number[]>([]);
+
+// const setMapRef = (map: any) => {
+//   if (map && !mapState) {
+//     debugger;
+//     const mapGL = map.getMap();
+//     map.setRef()
+//     // mapboxMap = mapGL;
+//     setMapState(mapGL);
+//   }
+// };
+
+// // const initializeMap = useCallback(() => {
+// //   mapboxMap.addSource("circlesSet", { type: "geojson", data: refData });
+// //   return mapboxMap.addLayer({
+// //     id: "circlesSet",
+// //     type: "circle",
+// //     source: "circlesSet",
+// //   });
+// // }, []);
+
+// // useEffect(() => {
+// //   if (!mapboxMap) {
+// //     initializeMap();
+// //   }
+// // }, []);
+
+// const circlesUpdater = setInterval(() => {
+//   if (mapState) {
+//     debugger;
+
+//     for (let i = 0; i < thetas.length; i++) {
+//       let ll =
+//         (geojson.features[0].geometry as any).coordinates ??
+//         initialCoordinates;
+//       let theta = thetas[i];
+
+//       const radEarth = 6378; // km
+//       const dy = 0.01 * theta;
+//       const dx = 0.01 * theta;
+//       const degFactor = theta * 180;
+//       const newLng: number = ll[0] + (dy / radEarth) * (degFactor / Math.PI);
+//       const newLat: number =
+//         ll[1] +
+//         ((dx / radEarth) * (degFactor / Math.PI)) /
+//           Math.cos((ll[0] * Math.PI) / degFactor);
+
+//       const newPos = [newLat, newLng];
+//       // debugger;
+//       if (mapState.getBounds().contains(newPos as LngLatLike)) {
+//         (geojson.features[0].geometry as any).coordinates = newPos;
+//       } else {
+//         (geojson.features[0].geometry as any).coordinates = getRandomLatLng();
+//       }
+//     }
+
+//     if (thetas.length > 2000) {
+//       clearInterval(circlesUpdater);
+//     }
+
+//     // Add another circle with random direction
+//     thetas.push(Math.random());
+//     const newFeature = {
+//       type: "Feature",
+//       geometry: {
+//         type: "Point",
+//         coordinates: getRandomLatLng(),
+//       },
+//       properties: {},
+//     };
+//     // (geojson.features[0].geometry as any).coordinates.push(getRandomLatLng());
+//     geojson.features.push(newFeature as any);
+
+//     // Update the map
+//     // mapboxMap.getSource("circlesSet").setData(refData);
+//     const source: mapboxgl.GeoJSONSource = mapState.getSource(
+//       "circlesSet"
+//     ) as mapboxgl.GeoJSONSource;
+//     source.setData(geojson);
+//   }
+// }, 5);
