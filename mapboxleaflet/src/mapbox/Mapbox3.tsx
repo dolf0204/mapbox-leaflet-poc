@@ -1,18 +1,10 @@
-import React, { FC, useCallback, useEffect, useState } from "react";
-import MapGL, {
-  CircleLayer,
-  Layer,
-  NavigationControl,
-  Source,
-} from "react-map-gl";
-
-// import { MAP } from "@/components/map/utils/constants";
+import React, { FC, useEffect, useState } from "react";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { token } from "../token";
-import mapboxgl, { LngLatLike, Point } from "mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
+import mapboxgl, { LngLatLike } from "mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
 
 import "./Mapbox2.css";
-import { getRandomLatLng } from "../randomLatLng";
+import { getMapboxRandomLatLng } from "../randomLatLng";
 
 const features = [
   {
@@ -753,42 +745,20 @@ const features = [
   },
 ];
 
-interface IViewport {
-  latitude: number;
-  longitude: number;
-  zoom: number;
-  bearing: number;
-  pitch: number;
-  antialias: boolean;
-}
-
-interface IInteractionState {
-  inTransition: boolean;
-  isDragging: boolean;
-  isPanning: boolean;
-  isRotating: boolean;
-  isZooming: boolean;
-}
-
-const initialInteractionState: IInteractionState = {
-  inTransition: false,
-  isDragging: false,
-  isPanning: false,
-  isRotating: false,
-  isZooming: false,
-};
-const initialViewport: IViewport = {
-  latitude: 51.505,
-  longitude: -0.09,
-  zoom: 10,
-  bearing: 0,
-  pitch: 0,
-  antialias: true,
-};
+const initialFeatures = [
+  {
+    type: "Feature",
+    geometry: {
+      type: "Point",
+      coordinates: [-0.1161132138455734, 51.55577759050807],
+    },
+    properties: {},
+  },
+];
 
 const initialMapResponse: GeoJSON.FeatureCollection<GeoJSON.Geometry> = {
   type: "FeatureCollection",
-  features: features as GeoJSON.Feature<
+  features: initialFeatures as GeoJSON.Feature<
     GeoJSON.Geometry,
     GeoJSON.GeoJsonProperties
   >[],
@@ -799,19 +769,12 @@ const initialFeautureCollection = {
   data: initialMapResponse,
 };
 
-const initialLayer: CircleLayer = {
-  id: "circlesSet",
-  type: "circle",
-  source: "circlesSet",
-};
-
 mapboxgl.accessToken = token;
 
 export const Mapbox3: FC = () => {
-  const INITIAL_MAP_ZOOM = 10;
-
   const [map, setMap] = useState<any>();
-
+  const [thetas, setThetas] = useState<number[]>([]);
+  const [geojson, setGeojson] = useState<any>(initialFeautureCollection);
   mapboxgl.accessToken = token;
   useEffect(() => {
     setMap(
@@ -826,24 +789,59 @@ export const Mapbox3: FC = () => {
 
   if (map) {
     map.on("load", () => {
-      map.addSource("national-park", {
-        type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: features,
+      map.addSource("circlesSet", { type: "geojson", data: geojson.data });
+
+      map.addLayer({
+        id: "circlesSet",
+        type: "circle",
+        source: "circlesSet",
+        paint: {
+          "circle-radius": 5,
+          "circle-color": "red",
+          "circle-opacity": 0.5,
         },
       });
 
-      map.addLayer({
-        id: "park-volcanoes",
-        type: "circle",
-        source: "national-park",
-        paint: {
-          "circle-radius": 6,
-          "circle-color": "#B42222",
-        },
-        filter: ["==", "$type", "Point"],
-      });
+      const circlesUpdater = setInterval(() => {
+        for (let i = 0; i < thetas.length; i++) {
+          let ll = geojson.data.features[i].geometry.coordinates;
+          let theta = thetas[i];
+
+          const radEarth = 6378; // km
+          const dy = 0.01 * theta;
+          const dx = 0.01 * theta;
+          const degFactor = theta * 180;
+          const newLng = ll[0] + (dy / radEarth) * (degFactor / Math.PI);
+          const newLat =
+            ll[1] +
+            ((dx / radEarth) * (degFactor / Math.PI)) /
+              Math.cos((ll[0] * Math.PI) / degFactor);
+
+          const newPos = [newLat, newLng];
+          if (map.getBounds().contains(newPos as LngLatLike)) {
+            geojson.data.features[i].geometry.coordinates = newPos;
+          } else {
+            geojson.data.features[i].geometry.coordinates =
+              getMapboxRandomLatLng();
+          }
+        }
+
+        if (thetas.length > 2000) {
+          clearInterval(circlesUpdater);
+        }
+
+        thetas.push(Math.random());
+        const newCircle = {
+          geometry: {
+            coordinates: getMapboxRandomLatLng(),
+            type: "Point",
+          },
+          type: "Feature",
+        };
+        geojson.data.features.push(newCircle);
+
+        map.getSource("circlesSet").setData(geojson.data);
+      }, 5);
     });
   }
 
