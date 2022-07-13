@@ -1,29 +1,46 @@
-import React from "react";
+import React, { useState } from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import { LeafLet } from "./leafLet/LeafLet";
 import { Mapbox } from "./mapbox/Mapbox";
-import Mapbox2 from "./mapbox/Mapbox2";
-import Mapbox3 from "./mapbox/Mapbox3";
+import { count } from "console";
 
 function App() {
+  const [mapSwitcher, setMapSwitcher] = useState("");
+  const [leafLetDots, setLeafLetDots] = useState(0);
+  const [mapBoxDots, setMapBoxDots] = useState(0);
+
+  const setLeaflet = () => {
+    setMapSwitcher("Leaflet");
+  };
+
+  const setMapbox = () => {
+    setMapSwitcher("Mapbox");
+  };
+  const countLeaflet = (dots: number) => {
+    setLeafLetDots(dots);
+  };
+  const countMapbox = (dots: number) => {
+    setMapBoxDots(dots);
+  };
   return (
     <div className="App">
-      {/* <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a> */}
+      <div className="navbar">
+        <button className="leaflet-button" onClick={setLeaflet}>
+          Leaflet: {leafLetDots}
+        </button>
+        <button className="mapbox-button" onClick={setMapbox}>
+          Mapbox: {mapBoxDots}
+        </button>
+      </div>
+
       <div>
-        {/* <LeafLet></LeafLet> */}
-        <Mapbox3></Mapbox3>
+        {mapSwitcher === "Leaflet" && (
+          <LeafLet countLeaflet={countLeaflet}></LeafLet>
+        )}
+        {mapSwitcher === "Mapbox" && (
+          <Mapbox countMapbox={countMapbox}></Mapbox>
+        )}
       </div>
     </div>
   );

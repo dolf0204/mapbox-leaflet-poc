@@ -11,3 +11,25 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.navbar {
+  height: 8vh;
+    display: flex;
+    justify-content: space-around;
+}
+.leaflet-button {
+  margin-bottom: 2vh;
+    margin-top: 2vh;
+    background-color: greenyellow;
+    border-radius: 9px;
+    color: #6b6969;
+    font-weight: bolder;
+}
+.mapbox-button {
+  margin-bottom: 2vh;
+    margin-top: 2vh;
+    background-color: greenyellow;
+    border-radius: 9px;
+    color: #6b6969;
+    font-weight: bolder;
+}

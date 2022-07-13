@@ -11,9 +11,11 @@ interface ICircleMeta {
   circle: L.Circle;
 }
 
-export const LeafLet: FC = () => {
-  debugger;
+interface IProps {
+  countLeaflet: (dots: number) => void;
+}
 
+export const LeafLet: FC<IProps> = (props: IProps) => {
   let leafMap: L.Map;
 
   const initializeMap = useCallback(() => {
@@ -57,7 +59,7 @@ export const LeafLet: FC = () => {
       clearInterval(circlesUpdater);
     }
     if (allCircles.length > 0) {
-      console.log(allCircles.length);
+      props.countLeaflet(allCircles.length);
     }
     if (leafMap) {
       const newCircle = L.circle(getRandomLatLng() as unknown as LatLng, 50, {
